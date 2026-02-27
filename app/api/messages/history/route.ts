@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getChatHistory } from '@/lib/messages';
 import getSupabase from '@/lib/supabase';
 
+// 标记为动态路由，避免静态渲染错误
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = request.nextUrl;
