@@ -6,10 +6,10 @@ const isBrowser = typeof window !== 'undefined';
 let pusher: Pusher | null = null;
 
 if (isBrowser) {
-  // 获取用户ID用于Pusher认证
+  // 获取用户ID用于Pusher认证（与 auth.ts 一致，使用 sessionStorage）
   const getUserId = () => {
     try {
-      return localStorage.getItem('anonymousId') || '';
+      return sessionStorage.getItem('anonymousId') || '';
     } catch {
       return '';
     }
