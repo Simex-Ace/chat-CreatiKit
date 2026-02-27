@@ -84,7 +84,7 @@ export const getOnlineUsers = (): string[] => {
     });
     
     // 确保用户ID唯一
-    const uniqueUsers = [...new Set(activeUsers)];
+    const uniqueUsers = Array.from(new Set(activeUsers));
     
     // 更新在线用户列表
     localStorage.setItem(ONLINE_USERS_KEY, JSON.stringify(uniqueUsers));
