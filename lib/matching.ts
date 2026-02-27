@@ -78,13 +78,13 @@ export const getOnlineUsers = (): string[] => {
     const thirtySeconds = 30 * 1000;
     
     // 过滤掉30秒内无活动的用户
-    const activeUsers = onlineUsers.filter((userId: string) => {
+    const activeUsers: string[] = onlineUsers.filter((userId: string) => {
       const lastActiveTime = lastActive[userId] || 0;
       return now - lastActiveTime < thirtySeconds;
     });
     
     // 确保用户ID唯一
-    const uniqueUsers = Array.from(new Set(activeUsers));
+    const uniqueUsers: string[] = Array.from(new Set(activeUsers));
     
     // 更新在线用户列表
     localStorage.setItem(ONLINE_USERS_KEY, JSON.stringify(uniqueUsers));
