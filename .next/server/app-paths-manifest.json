@@ -1,5 +1,0 @@
-{
-  "/page": "app/page.js",
-  "/api/messages/send/route": "app/api/messages/send/route.js",
-  "/api/pusher/auth/route": "app/api/pusher/auth/route.js"
-}
