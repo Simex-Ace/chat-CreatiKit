@@ -11,10 +11,7 @@ export interface UserStatus {
 // 更新用户在线状态
 export const updateUserStatus = async (userId: string, isOnline: boolean): Promise<void> => {
   const supabase = getSupabase();
-  if (!supabase) {
-    console.warn('Supabase not configured');
-    return;
-  }
+  if (!supabase) return;
   
   try {
     const { error } = await supabase
@@ -41,10 +38,7 @@ export const updateUserStatus = async (userId: string, isOnline: boolean): Promi
 // 获取用户在线状态
 export const getUserStatus = async (userId: string): Promise<UserStatus | null> => {
   const supabase = getSupabase();
-  if (!supabase) {
-    console.warn('Supabase not configured');
-    return null;
-  }
+  if (!supabase) return null;
   
   try {
     const { data, error } = await supabase

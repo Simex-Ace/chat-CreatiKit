@@ -28,8 +28,8 @@ export const getSupabase = (): SupabaseClient | null => {
   if (isValidSupabaseConfig(supabaseUrl, supabaseAnonKey)) {
     try {
       supabase = createClient(supabaseUrl!, supabaseAnonKey!);
-    } catch (error) {
-      console.error('Error creating Supabase client:', error);
+    } catch {
+      // 配置无效时静默失败，不污染控制台
     }
   }
 

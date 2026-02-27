@@ -44,10 +44,7 @@ export const sendMessage = async (
 // 标记消息为已读
 export const markMessageAsRead = async (messageId: string): Promise<boolean> => {
   const supabase = getSupabase();
-  if (!supabase) {
-    console.warn('Supabase not configured');
-    return false;
-  }
+  if (!supabase) return false;
   
   try {
     const { error } = await supabase
@@ -75,10 +72,7 @@ export const getChatHistory = async (
   offset: number = 0
 ): Promise<Message[]> => {
   const supabase = getSupabase();
-  if (!supabase) {
-    console.warn('Supabase not configured');
-    return [];
-  }
+  if (!supabase) return [];
   
   try {
     const { data: messages, error } = await supabase
