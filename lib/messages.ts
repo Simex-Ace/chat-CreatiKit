@@ -28,8 +28,9 @@ export const sendMessage = async (
     });
 
     if (!response.ok) {
-      console.error('Error sending message:', await response.json());
-      return null;
+      const errData = await response.json().catch(() => ({}));
+      const errMsg = errData?.error || errData?.details || `发送失败 (${response.status})`;
+      throw new Error(errMsg);
     }
 
     const data = await response.json();
@@ -125,7 +126,10 @@ export const subscribeToMessages = (
   const channel = pusher.subscribe(channelName);
 
   channel.bind('new-message', (data: Message) => {
-    callback(data);
+    // 只处理对方发来的消息，自己的消息已由 API 返回添加，避免重复
+    if (data.sender_id !== userId) {
+      callback(data);
+    }
   });
 };
 

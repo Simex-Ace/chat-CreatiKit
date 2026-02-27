@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getAnonymousId, regenerateAnonymousId } from '@/lib/auth';
 import { findMatch, MatchStatus } from '@/lib/matching';
 import { sendMessage, getChatHistory, subscribeToMessages, unsubscribeFromMessages, Message } from '@/lib/messages';
@@ -17,6 +17,7 @@ const ChatApp: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const [partnerOnline, setPartnerOnline] = useState<boolean>(false);
+  const [sendError, setSendError] = useState<string | null>(null);
 
   // 在客户端获取真实的匿名ID
   useEffect(() => {
@@ -103,6 +104,7 @@ const ChatApp: React.FC = () => {
     const message = inputMessage.trim();
     setInputMessage('');
     setIsTyping(true);
+    setSendError(null);
 
     try {
       const newMessage = await sendMessage(userId, matchedUserId, message);
@@ -110,17 +112,21 @@ const ChatApp: React.FC = () => {
         setMessages(prev => [...prev, newMessage]);
       }
     } catch (error) {
-      console.error('Error sending message:', error);
+      setSendError(error instanceof Error ? error.message : '发送失败');
     } finally {
       setIsTyping(false);
     }
   };
 
+  // 用 ref 保持回调最新，避免闭包陈旧导致收不到消息
+  const setMessagesRef = useRef(setMessages);
+  setMessagesRef.current = setMessages;
+
   // 订阅消息
   useEffect(() => {
     if (matchedUserId) {
       subscribeToMessages(userId, matchedUserId, (newMessage) => {
-        setMessages(prev => [...prev, newMessage]);
+        setMessagesRef.current((prev) => [...prev, newMessage]);
       });
 
       return () => {
@@ -214,6 +220,9 @@ const ChatApp: React.FC = () => {
 
           {/* 消息输入框 */}
           <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+            {sendError && (
+              <p className="mb-2 text-sm text-red-600 dark:text-red-400">{sendError}</p>
+            )}
             <div className="flex">
               <input
                 type="text"

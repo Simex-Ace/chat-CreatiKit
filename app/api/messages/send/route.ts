@@ -40,30 +40,29 @@ export async function POST(request: NextRequest) {
         read: false
       };
 
-      // Trigger Pusher event for real-time messaging (non-blocking)
-      (async () => {
-        try {
-          // 生成频道名称的哈希值，避免中文字符导致的错误
-          const generateChannelHash = (id: string) => {
-            let hash = 0;
-            for (let i = 0; i < id.length; i++) {
-              const char = id.charCodeAt(i);
-              hash = ((hash << 5) - hash) + char;
-              hash = hash & hash;
-            }
-            return Math.abs(hash).toString(16);
-          };
-          
-          // 统一频道命名规则，确保双方订阅同一个频道
-          const sortedIds = [senderId, receiverId].sort();
-          const channelHash = sortedIds.map(generateChannelHash).join('-');
-          const channelName = `public-chat-${channelHash}`;
-          await pusher.trigger(channelName, 'new-message', mockMessage);
-          console.log('Pusher event triggered:', channelName);
-        } catch (pusherError) {
-          console.error('Error triggering Pusher event:', pusherError);
+      // 生成频道名称的哈希值
+      const generateChannelHash = (id: string) => {
+        let hash = 0;
+        for (let i = 0; i < id.length; i++) {
+          const char = id.charCodeAt(i);
+          hash = ((hash << 5) - hash) + char;
+          hash = hash & hash;
         }
-      })();
+        return Math.abs(hash).toString(16);
+      };
+      const sortedIds = [senderId, receiverId].sort();
+      const channelHash = sortedIds.map(generateChannelHash).join('-');
+      const channelName = `public-chat-${channelHash}`;
+
+      try {
+        await pusher.trigger(channelName, 'new-message', mockMessage);
+      } catch (pusherError) {
+        console.error('Pusher trigger failed:', pusherError);
+        return NextResponse.json(
+          { error: 'Pusher 广播失败，请检查 Vercel 环境变量是否已配置 Pusher 密钥', details: String(pusherError) },
+          { status: 503 }
+        );
+      }
 
       return NextResponse.json({ message: mockMessage }, { status: 200 });
     }
@@ -74,30 +73,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to send message' }, { status: 500 });
     }
 
-    // Trigger Pusher event for real-time messaging (non-blocking)
-    (async () => {
-      try {
-        // 生成频道名称的哈希值，避免中文字符导致的错误
-        const generateChannelHash = (id: string) => {
-          let hash = 0;
-          for (let i = 0; i < id.length; i++) {
-            const char = id.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash;
-          }
-          return Math.abs(hash).toString(16);
-        };
-        
-        // 统一频道命名规则，确保双方订阅同一个频道
-        const sortedIds = [senderId, receiverId].sort();
-        const channelHash = sortedIds.map(generateChannelHash).join('-');
-        const channelName = `public-chat-${channelHash}`;
-        await pusher.trigger(channelName, 'new-message', message);
-        console.log('Pusher event triggered:', channelName);
-      } catch (pusherError) {
-        console.error('Error triggering Pusher event:', pusherError);
+    const generateChannelHash = (id: string) => {
+      let hash = 0;
+      for (let i = 0; i < id.length; i++) {
+        const char = id.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
       }
-    })();
+      return Math.abs(hash).toString(16);
+    };
+    const sortedIds = [senderId, receiverId].sort();
+    const channelHash = sortedIds.map(generateChannelHash).join('-');
+    const channelName = `public-chat-${channelHash}`;
+
+    try {
+      await pusher.trigger(channelName, 'new-message', message);
+    } catch (pusherError) {
+      console.error('Pusher trigger failed:', pusherError);
+      return NextResponse.json(
+        { error: 'Pusher 广播失败', details: String(pusherError) },
+        { status: 503 }
+      );
+    }
 
     return NextResponse.json({ message }, { status: 200 });
   } catch (error) {
