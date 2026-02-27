@@ -14,6 +14,19 @@ const pusher = new Pusher({
 
 export async function POST(request: NextRequest) {
   try {
+    // 提前检查 Pusher 配置，避免静默失败
+    const hasPusher = !!(
+      process.env.NEXT_PUBLIC_PUSHER_APP_ID &&
+      process.env.NEXT_PUBLIC_PUSHER_KEY &&
+      process.env.NEXT_PUBLIC_PUSHER_SECRET
+    );
+    if (!hasPusher) {
+      return NextResponse.json(
+        { error: 'Pusher 未配置，请在 Vercel 环境变量中添加 NEXT_PUBLIC_PUSHER_APP_ID、KEY、SECRET' },
+        { status: 503 }
+      );
+    }
+
     const body = await request.json();
     const { senderId, receiverId, content } = body;
 
