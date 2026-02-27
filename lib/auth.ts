@@ -12,7 +12,7 @@ const generateChineseNickname = (): string => {
 };
 
 // 检查是否在浏览器环境中
-const isBrowser = typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+const isBrowser = typeof window !== 'undefined' && typeof sessionStorage !== 'undefined';
 
 // 生成匿名ID
 export const generateAnonymousId = (): string => {
@@ -26,8 +26,9 @@ export const getAnonymousId = (): string => {
     return generateAnonymousId();
   }
 
-  const storedId = localStorage.getItem('anonymousId');
-  const storedExpiry = localStorage.getItem('anonymousIdExpiry');
+  // 优先使用sessionStorage，这样每个标签页都是独立用户
+  const storedId = sessionStorage.getItem('anonymousId');
+  const storedExpiry = sessionStorage.getItem('anonymousIdExpiry');
   const now = Date.now();
 
   // 检查是否存在有效ID
@@ -40,10 +41,10 @@ export const getAnonymousId = (): string => {
 
   // 生成新ID
   const newId = generateAnonymousId();
-  const newExpiry = now + 30 * 24 * 60 * 60 * 1000; // 30天
+  const newExpiry = now + 24 * 60 * 60 * 1000; // 1天（session只在当前会话有效，时间仅作参考）
 
-  localStorage.setItem('anonymousId', newId);
-  localStorage.setItem('anonymousIdExpiry', newExpiry.toString());
+  sessionStorage.setItem('anonymousId', newId);
+  sessionStorage.setItem('anonymousIdExpiry', newExpiry.toString());
 
   return newId;
 };
@@ -53,9 +54,9 @@ export const regenerateAnonymousId = (): string => {
   const newId = generateAnonymousId();
   
   if (isBrowser) {
-    const newExpiry = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30天
-    localStorage.setItem('anonymousId', newId);
-    localStorage.setItem('anonymousIdExpiry', newExpiry.toString());
+    const newExpiry = Date.now() + 24 * 60 * 60 * 1000; // 1天
+    sessionStorage.setItem('anonymousId', newId);
+    sessionStorage.setItem('anonymousIdExpiry', newExpiry.toString());
   }
 
   return newId;
@@ -64,7 +65,7 @@ export const regenerateAnonymousId = (): string => {
 // 清除匿名ID
 export const clearAnonymousId = (): void => {
   if (isBrowser) {
-    localStorage.removeItem('anonymousId');
-    localStorage.removeItem('anonymousIdExpiry');
+    sessionStorage.removeItem('anonymousId');
+    sessionStorage.removeItem('anonymousIdExpiry');
   }
 };
